@@ -1,0 +1,1 @@
+dir E:\ -recurse | where {$_.psiscontainer} | Where {(test-path (join-path $_.fullname "HELP_DECRYPT.txt"))} | foreach { "$($_.fullname) has the file"}

@@ -1,0 +1,2 @@
+﻿Import-Module ActiveDirectory
+import-csv "C:\users\avalon\desktop\_dump\SBSUsers-dump.csv" | New-ADUser -passthru | Set-ADAccountPassword -reset -NewPassword (ConvertTo-SecureString -Force -AsPlainText 'Summer2016') |Enable-ADAccount -passthru
