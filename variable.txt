@@ -1,0 +1,14 @@
+#variable tracking with "populatable fields"
+$domainname
+$provisionname
+$domainadmincred
+
+$username
+$password
+$desc
+
+$drive
+$softwaredir
+$dentalequipmentdir
+
+$blacklist
