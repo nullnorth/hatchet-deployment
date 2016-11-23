@@ -12,3 +12,10 @@ $softwaredir
 $dentalequipmentdir
 
 $blacklist
+
+##DSC-DHCP.ps1
+$DHCPScopeEnd
+$DHCPScopeStart
+$networkaddress
+$DNSserver1
+$DNSserver2
