@@ -1,0 +1,23 @@
+p0
+
+TODO	-- xFirefox , xChrome, xWindowsUpdate , xPowershellExecutionPolicy, xPendingReboot
+
+p1
+deploy directories	-- file,xstorage??, xSMBShare
+enable rdp -- xremotedesktopadmin
+hyperv management	-- xHyper-v??
+local account creation --
+set computer name	-- 
+set network adapter	-- xNetworking
+set ntp on dc
+Join domain -- xComputerManagement
+TODO	-- xTimeZone
+
+p2
+create-ad		-- xActiveDirectory
+create-dhcpserver		-- xDhcpServer
+create ou structure		-- xActiveDirectory
+create DNS server 		--xDnsServer
+
+PESTER what/how use it????
+AutomatedLab 		-- https://github.com/AutomatedLab/AutomatedLab
