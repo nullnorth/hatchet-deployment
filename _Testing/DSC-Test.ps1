@@ -5,11 +5,11 @@
         [Parameter(Mandatory)]             
         [pscredential]$safemodeAdministratorCred,             
         [Parameter(Mandatory)]            
-        [pscredential]$domainCred            
+        [pscredential]$domainCred
     )             
             
-    Import-DscResource -ModuleName xActiveDirectory             
-    import-dscresource -ModuleName xDhcpServer
+    Import-DscResource -ModuleName xActiveDirectory
+    Import-DscResource -ModuleName xDhcpServer
             
     Node $AllNodes.Where{$_.Role -eq "Primary DC"}.Nodename             
     {             
@@ -47,39 +47,50 @@
             DomainName = $Node.DomainName             
             DomainAdministratorCredential = $domainCred             
             SafemodeAdministratorPassword = $safemodeAdministratorCred            
-            DatabasePath = 'N:\NTDS'            
-            LogPath = 'N:\NTDS'            
+            DatabasePath = 'C:\NTDS'            
+            LogPath = 'C:\NTDS'            
             DependsOn = "[WindowsFeature]ADDSInstall","[File]ADFiles"            
         }            
-            
+                windowsfeature dhcpinstall
+        {
+            ensure = "Present"
+            Name = "DHCP"
+        }
+        windowsfeature dhcptools
+        {
+            ensure = "Present"
+            Name = "RSAT-DHCP"
+        }
+        xDhcpServerScope Scope 
+        { 
+            Ensure = 'Present' 
+            IPEndRange = "$DHCPScopeEnd" 
+            IPStartRange = "$DHCPScopeStart" 
+            Name = "$domainname"
+            SubnetMask = '255.255.255.0' 
+            LeaseDuration = '00:08:00' 
+            State = 'Inactive' 
+            AddressFamily = 'IPv4'
+            Dependson = "[WindowsFeature]dhcptools"
+        } 
+        xDhcpServerOption ScopeOpt 
+        { 
+            Ensure = 'Present' 
+            ScopeID = "$ScopeID"
+            DnsDomain = "$domainname" 
+            DnsServerIPAddress = "$DNSserver1","$DNSserver2" 
+            AddressFamily = 'IPv4'
+            #Dependson = "[xDhcpServer]Scope,[WindowsFeature]dhcptools" 
+         } 
     }             
 }                     
 # Configuration Data for AD              
-$ConfigData = @{             
-    AllNodes = @(             
-        @{             
-            #DC
-            Nodename = "localhost"             
-            Role = "Primary DC"             
-            DomainName = "alpineskihouse.com"             
-            RetryCount = 20              
-            RetryIntervalSec = 30            
-            PsDscAllowPlainTextPassword = $true            
-            #DHCP
-            DHCPScopeEnd = "192.168.22.200"
-            DHCPScopeStart = "192.168.22.100"
-            networkaddress = "192.168.22.0"
-            DNSserver1 = "192.168.22.2"
-            DNSserver2 = "192.168.22.3"     
-        }            
-    )             
-}   
 
 DSC-AD -ConfigurationData .\DSC-AD.psd1 `
     -safemodeAdministratorCred (Get-Credential -UserName '(Password Only)' `
         -Message "New Domain Safe Mode Administrator Password") `
     -domainCred (Get-Credential -UserName alpineskihouse\administrator `
-        -Message "New Domain Admin Credential")            
+        -Message "New Domain Admin Credential")          
             
 # Make sure that LCM is set to continue configuration after reboot            
 #Set-DSCLocalConfigurationManager -Path .\DSC-AD –Verbose            
