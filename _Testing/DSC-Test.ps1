@@ -9,8 +9,7 @@
     )             
             
     Import-DscResource -ModuleName xActiveDirectory             
-    import-dscresource -module xDHCPServer
-    
+    import-dscresource -ModuleName xDhcpServer
             
     Node $AllNodes.Where{$_.Role -eq "Primary DC"}.Nodename             
     {             
@@ -21,7 +20,7 @@
             ConfigurationMode = 'ApplyOnly'            
             RebootNodeIfNeeded = $true            
         }            
-           
+            
         File ADFiles            
         {            
             DestinationPath = 'C:\NTDS'            
@@ -35,14 +34,14 @@
             Name = "AD-Domain-Services"             
         }            
             
-# Optional ADDS GUI tools            
+        # Optional GUI tools            
         WindowsFeature ADDSTools            
         {             
             Ensure = "Present"             
             Name = "RSAT-ADDS"             
         }            
             
-# No slash at end of folder paths            
+        # No slash at end of folder paths            
         xADDomain FirstDS             
         {             
             DomainName = $Node.DomainName             
@@ -51,55 +50,39 @@
             DatabasePath = 'N:\NTDS'            
             LogPath = 'N:\NTDS'            
             DependsOn = "[WindowsFeature]ADDSInstall","[File]ADFiles"            
-        }
-        
-#To install the DHCP Server Role
-        windowsfeature dhcpinstall
-        {
-            ensure = "Present"
-            Name = "DHCP"
-        }
-#To install the DHCP GUI tools
-        windowsfeature dhcptools
-        {
-            ensure = "Present"
-            Name = "RSAT-DHCP"
-        }
-#DHCP Scope 
-        xDhcpServerScope DomainScope 
-             { 
-                 Ensure = 'Present' 
-                 IPEndRange = "$DHCPScopeEnd" 
-                 IPStartRange = "$DHCPScopeStart" 
-                 Name = '$domainname' 
-                 SubnetMask = '255.255.255.0' 
-                 LeaseDuration = '00:08:00' 
-                 State = 'Inactive' 
-                 AddressFamily = 'IPv4' 
-             }
-#Scope Options
-        xDhcpServerOption Option 
-             { 
-                 Ensure = 'Present' 
-                 ScopeID = "$networkaddress"
-                 DnsDomain = "$domainname" 
-                 DnsServerIPAddress = "$DNSserver1","$DNSserver2" 
-                 AddressFamily = 'IPv4' 
-             } 
-        #TODO Add section for DHCP server authorization 
-            
+        }            
             
     }             
 }                     
+# Configuration Data for AD              
+$ConfigData = @{             
+    AllNodes = @(             
+        @{             
+            #DC
+            Nodename = "localhost"             
+            Role = "Primary DC"             
+            DomainName = "alpineskihouse.com"             
+            RetryCount = 20              
+            RetryIntervalSec = 30            
+            PsDscAllowPlainTextPassword = $true            
+            #DHCP
+            DHCPScopeEnd = "192.168.22.200"
+            DHCPScopeStart = "192.168.22.100"
+            networkaddress = "192.168.22.0"
+            DNSserver1 = "192.168.22.2"
+            DNSserver2 = "192.168.22.3"     
+        }            
+    )             
+}   
 
-DSC-AD -ConfigurationData $ConfigData `
+DSC-AD -ConfigurationData .\DSC-AD.psd1 `
     -safemodeAdministratorCred (Get-Credential -UserName '(Password Only)' `
         -Message "New Domain Safe Mode Administrator Password") `
     -domainCred (Get-Credential -UserName alpineskihouse\administrator `
         -Message "New Domain Admin Credential")            
             
 # Make sure that LCM is set to continue configuration after reboot            
-Set-DSCLocalConfigurationManager -Path .\DSC-AD –Verbose            
+#Set-DSCLocalConfigurationManager -Path .\DSC-AD –Verbose            
             
 # Build the domain            
-Start-DscConfiguration -Wait -Force -Path .\DSC-AD -Verbose            
+#Start-DscConfiguration -Wait -Force -Path .\DSC-AD    
