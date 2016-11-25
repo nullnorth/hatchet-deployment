@@ -1,5 +1,5 @@
 ﻿# Configuration Data for AD              
-$ConfigData = @{             
+@{             
     AllNodes = @(             
         @{             
             #DC
