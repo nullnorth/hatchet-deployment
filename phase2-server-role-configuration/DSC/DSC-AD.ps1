@@ -9,6 +9,7 @@
     )             
             
     Import-DscResource -ModuleName xActiveDirectory             
+    import-dscresource -ModuleName xDhcpServer
             
     Node $AllNodes.Where{$_.Role -eq "Primary DC"}.Nodename             
     {             
@@ -53,6 +54,26 @@
             
     }             
 }                     
+# Configuration Data for AD              
+$ConfigData = @{             
+    AllNodes = @(             
+        @{             
+            #DC
+            Nodename = "localhost"             
+            Role = "Primary DC"             
+            DomainName = "alpineskihouse.com"             
+            RetryCount = 20              
+            RetryIntervalSec = 30            
+            PsDscAllowPlainTextPassword = $true            
+            #DHCP
+            DHCPScopeEnd = "192.168.22.200"
+            DHCPScopeStart = "192.168.22.100"
+            networkaddress = "192.168.22.0"
+            DNSserver1 = "192.168.22.2"
+            DNSserver2 = "192.168.22.3"     
+        }            
+    )             
+}   
 
 DSC-AD -ConfigurationData $ConfigData `
     -safemodeAdministratorCred (Get-Credential -UserName '(Password Only)' `
@@ -61,7 +82,7 @@ DSC-AD -ConfigurationData $ConfigData `
         -Message "New Domain Admin Credential")            
             
 # Make sure that LCM is set to continue configuration after reboot            
-Set-DSCLocalConfigurationManager -Path .\DSC-AD –Verbose            
+#Set-DSCLocalConfigurationManager -Path .\DSC-AD –Verbose            
             
 # Build the domain            
-Start-DscConfiguration -Wait -Force -Path .\DSC-AD -Verbose            
+#Start-DscConfiguration -Wait -Force -Path .\DSC-AD    
