@@ -1,4 +1,4 @@
-﻿configuration DSC-AD             
+﻿configuration DSC-TEST            
 {             
    param             
     (             
@@ -75,8 +75,11 @@
         } 
         xDhcpServerOption ScopeOpt 
         { 
-            Ensure = 'Present' 
-            ScopeID = "$ScopeID"
+            Ensure = 'Present'
+            #I need to hardcode in the SCOPEID ????
+            #Seems to be a issue with variable resolution
+            ScopeID = '192.168.22.0'
+            #ScopeID = "$ScopeID"
             DnsDomain = "$domainname" 
             DnsServerIPAddress = "$DNSserver1","$DNSserver2" 
             AddressFamily = 'IPv4'
@@ -86,7 +89,7 @@
 }                     
 # Configuration Data for AD              
 
-DSC-AD -ConfigurationData .\DSC-AD.psd1 `
+DSC-TEST -ConfigurationData .\DSC-AD.psd1 `
     -safemodeAdministratorCred (Get-Credential -UserName '(Password Only)' `
         -Message "New Domain Safe Mode Administrator Password") `
     -domainCred (Get-Credential -UserName alpineskihouse\administrator `

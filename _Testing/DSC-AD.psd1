@@ -3,7 +3,7 @@
     AllNodes = @(             
         @{             
             #DC
-            Nodename = "localhost"             
+            Nodename = "$env:computername"             
             Role = "Primary DC"             
             DomainName = "alpineskihouse.com"             
             RetryCount = 20              
@@ -13,7 +13,7 @@
             DHCPScopeEnd = "192.168.22.200"
             DHCPScopeStart = "192.168.22.100"
             #networkaddress = "192.168.22.0"
-            ScopeID = '1024'
+            #ScopeID = '192.168.22.0'
             DNSserver1 = "192.168.22.2"
             DNSserver2 = "192.168.22.3"     
         }            
