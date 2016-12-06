@@ -8,5 +8,4 @@ $activeadapter = Get-NetIPinterface -ConnectionState Connected -Dhcp Enabled -Ad
 foreach ($blackIP in $blacklist) {
     if ($(Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $activeadapter.ifIndex).IPv4Address -like $blackIP )
         {echo "Invalid IP"; break}
-    }
-
+    }
