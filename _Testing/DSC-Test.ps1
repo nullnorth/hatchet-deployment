@@ -1,4 +1,4 @@
-﻿configuration DSC-TEST            
+configuration DSC-TEST            
 {             
    param             
     (             
@@ -10,6 +10,7 @@
             
     Import-DscResource -ModuleName xActiveDirectory
     Import-DscResource -ModuleName xDhcpServer
+    Import-DscResource -ModuleName xComputerManagement
             
     Node $AllNodes.Where{$_.Role -eq "Primary DC"}.Nodename             
     {             
@@ -21,6 +22,10 @@
             RebootNodeIfNeeded = $true            
         }            
             
+        xComputer DCName
+        {
+            Name = $DesiredDCName
+        }
         File ADFiles            
         {            
             DestinationPath = 'C:\NTDS'            
@@ -31,9 +36,9 @@
         WindowsFeature ADDSInstall             
         {             
             Ensure = "Present"             
-            Name = "AD-Domain-Services"             
+            Name = "AD-Domain-Services"
+            DependsOn = "[xComputer]DCName"                   
         }            
-            
         # Optional GUI tools            
         WindowsFeature ADDSTools            
         {             
@@ -49,9 +54,9 @@
             SafemodeAdministratorPassword = $safemodeAdministratorCred            
             DatabasePath = 'C:\NTDS'            
             LogPath = 'C:\NTDS'            
-            DependsOn = "[WindowsFeature]ADDSInstall","[File]ADFiles"            
+            DependsOn = "[WindowsFeature]ADDSInstall","[File]ADFiles","[xComputer]DCName"           
         }            
-                windowsfeature dhcpinstall
+        windowsfeature dhcpinstall
         {
             ensure = "Present"
             Name = "DHCP"
@@ -73,7 +78,7 @@
             AddressFamily = 'IPv4'
             Dependson = "[WindowsFeature]dhcptools"
         } 
-        xDhcpServerOption ScopeOpt 
+        <#xDhcpServerOption ScopeOpt 
         { 
             Ensure = 'Present'
             #I need to hardcode in the SCOPEID ????
@@ -83,8 +88,8 @@
             DnsDomain = "$domainname" 
             DnsServerIPAddress = "$DNSserver1","$DNSserver2" 
             AddressFamily = 'IPv4'
-            #Dependson = "[xDhcpServer]Scope,[WindowsFeature]dhcptools" 
-         } 
+            #Dependson = "[xDhcpServerScope]Scope","[WindowsFeature]dhcpinstall" 
+         } #>
     }             
 }                     
 # Configuration Data for AD              
@@ -96,7 +101,7 @@ DSC-TEST -ConfigurationData .\DSC-AD.psd1 `
         -Message "New Domain Admin Credential")          
             
 # Make sure that LCM is set to continue configuration after reboot            
-#Set-DSCLocalConfigurationManager -Path .\DSC-AD –Verbose            
+#Set-DSCLocalConfigurationManager -Path .\DSC-TEST -Verbose            
             
 # Build the domain            
-#Start-DscConfiguration -Wait -Force -Path .\DSC-AD    
+#Start-DscConfiguration -Wait -Force -Path .\DSC-TEST  

@@ -1,10 +1,11 @@
-﻿# Configuration Data for AD              
+# Configuration Data for AD              
 @{             
     AllNodes = @(             
         @{             
             #DC
-            Nodename = "$env:computername"             
+            Nodename = "localhost"             
             Role = "Primary DC"             
+            DesiredDCName = 'TEST-DC'
             DomainName = "alpineskihouse.com"             
             RetryCount = 20              
             RetryIntervalSec = 30            
